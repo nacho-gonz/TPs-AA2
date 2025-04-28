@@ -1,0 +1,16 @@
+{
+    "name": "TensorFlow GPU Dev",
+    "image": "tensorflow/tensorflow:2.13.0-gpu",
+    "runArgs": [
+    "--gpus=all"
+    ],
+    "mounts": [
+    "source=${localWorkspaceFolder},target=/workspace,type=bind"
+    ],
+    "workspaceFolder": "/workspace",
+    "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+    },
+    "postCreateCommand": "pip install --upgrade pip && pip install ipython",
+    "remoteUser": "root"
+    }
