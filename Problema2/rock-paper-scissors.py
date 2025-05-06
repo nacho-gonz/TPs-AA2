@@ -56,7 +56,7 @@ modelo = tf.keras.models.load_model("rps_model.h5")
 clases = ["Piedra", "Papel", "Tijera"]
 
 # Iniciar MediaPipe Task
-base_options = python.BaseOptions(model_asset_path='c:/models/model.task')
+base_options = python.BaseOptions(model_asset_path='./model.task')
 options = vision.HandLandmarkerOptions(base_options=base_options, num_hands=1)
 detector = vision.HandLandmarker.create_from_options(options)
 

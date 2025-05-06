@@ -1,6 +1,5 @@
-import cv2
-import time
 import os
+import cv2
 
 webcam = cv2.VideoCapture(0)
 counter = 1
