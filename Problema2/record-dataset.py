@@ -9,9 +9,16 @@ import shutil
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.preprocessing.image import img_to_array, load_img
 
+if 'fotos' in os.listdir('./'):
+    shutil.rmtree('./fotos')
+
+if 'augmented_images' in os.listdir('./'):
+    shutil.rmtree('./augmented_images')
+
 webcam = cv2.VideoCapture(0)
 counter = 1
-clases = ['piedra', 'papel', 'tijera']
+clases = ['papel', 'piedra', 'tijera']
+ppt = ['clase_papel','clase_piedra','clase_tijera']
 n = 0
 print("--- Instrucciones ---")
 print("Las imagenes serán tomadas por clase en el siguiente orden: piedra, papel y tijera")
@@ -29,14 +36,15 @@ while True:
         
         cv2.imshow("Capturando (Presiona 's' para guardar, 'e' para cambiar de clase y 'q' para salir)", frame)
         clase = clases[n]
-        print(f'Capturando la imagenes de la clase {clase}')
+        dirs = ppt[n]
         key = cv2.waitKey(1)
 
         if key == ord('s'): 
-            dir = f"./fotos/{clase}"
+            dir = f"./fotos/{dirs}"
             filename = f"{dir}/{clase}_{counter}.jpg"
             os.makedirs(dir, exist_ok=True)
             cv2.imwrite(filename, frame)
+            print(f'Capturando la imagenes de la clase {clase}')
             print(f"Foto guardada como: {filename}")
             counter += 1 
         elif key == ord('e'):
@@ -47,7 +55,7 @@ while True:
                 break
             n += 1
             counter = 1
-            print(f'Cambiando a la clase {clase}')
+            print(f'Cambiando a la clase {clases[n]}')
         elif key == ord('q'):
             print("Apagando cámara...")
             webcam.release()
@@ -129,42 +137,42 @@ def augment_and_save(class_folder):
         # Generar y guardar imágenes aumentadas
         i = 0
         for batch in datagen.flow(x, batch_size=1,
-                                 save_to_dir=output_class_path,
-                                 save_prefix='aug',
-                                 save_format='jpeg'):
+                                save_to_dir=output_class_path,
+                                save_prefix='aug',
+                                save_format='jpeg'):
             i += 1
             if i >= augmentation_factor:
                 break  
 
+if 'fotos' in os.listdir('./') and 'augmented_images' in os.listdir('./'):
 
-for class_folder in os.listdir(train_data_dir):
-    if os.path.isdir(os.path.join(train_data_dir, class_folder)):
-        augment_and_save(class_folder)
-
-
-
-lista_puntos = []
-lista_labels = []
-ppt = ['papel','piedra','tijera']
-
-
-for gesto in ppt:
-    for i, foto in enumerate(os.listdir(f'./augmented_images/{gesto}')):
-        mp_image = mp.Image.create_from_file(f'./augmented_images/{gesto}/{foto}')
-        hand_landmarker_result = detector.detect(mp_image)
-        try:
-            lista_puntos.append([coord for lm in hand_landmarker_result.hand_landmarks[0] for coord in (lm.x, lm.y)])
-        except:
-            continue
-        
-        if gesto == 'clase_papel':
-            lista_labels.append(1)
-        elif gesto == 'clase_piedra':
-            lista_labels.append(0)
-        else:
-            lista_labels.append(2)
+    for class_folder in os.listdir(train_data_dir):
+        if os.path.isdir(os.path.join(train_data_dir, class_folder)):
+            augment_and_save(class_folder)
 
 
 
-np.save('./rps_dataset.npy', lista_puntos)
-np.save('./rps_labels.npy', lista_labels)
+    lista_puntos = []
+    lista_labels = []
+
+
+    for gesto in ppt:
+        for i, foto in enumerate(os.listdir(f'./augmented_images/{gesto}')):
+            mp_image = mp.Image.create_from_file(f'./augmented_images/{gesto}/{foto}')
+            hand_landmarker_result = detector.detect(mp_image)
+            try:
+                lista_puntos.append([coord for lm in hand_landmarker_result.hand_landmarks[0] for coord in (lm.x, lm.y)])
+            except:
+                continue
+            
+            if gesto == 'clase_papel':
+                lista_labels.append(1)
+            elif gesto == 'clase_piedra':
+                lista_labels.append(0)
+            else:
+                lista_labels.append(2)
+
+
+
+    np.save('./rps_dataset.npy', lista_puntos)
+    np.save('./rps_labels.npy', lista_labels)
